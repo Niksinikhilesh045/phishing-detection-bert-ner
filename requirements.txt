@@ -1,0 +1,70 @@
+# Core ML and NLP Libraries
+torch>=1.12.0,<3.0.0
+transformers>=4.21.0,<5.0.0
+tokenizers>=0.13.0,<1.0.0
+datasets>=2.4.0,<3.0.0
+
+# Data Processing and Analysis
+pandas>=1.5.0,<3.0.0
+numpy>=1.21.0,<2.0.0
+scikit-learn>=1.1.0,<2.0.0
+
+# NLP and Text Processing
+spacy>=3.4.0,<4.0.0
+nltk>=3.7,<4.0.0
+regex>=2022.7.9
+
+# Email Processing
+email-reply-parser>=0.5.12
+beautifulsoup4>=4.11.0,<5.0.0
+lxml>=4.9.0,<5.0.0
+
+# API and Web Framework (for future integration)
+fastapi>=0.85.0,<1.0.0
+uvicorn>=0.18.0,<1.0.0
+pydantic>=1.10.0,<2.0.0
+requests>=2.28.0,<3.0.0
+
+# Data Visualization
+matplotlib>=3.5.0,<4.0.0
+seaborn>=0.11.0,<1.0.0
+plotly>=5.10.0,<6.0.0
+
+# Configuration Management
+pyyaml>=6.0,<7.0.0
+python-dotenv>=0.20.0,<2.0.0
+
+# Progress Bars and Utilities
+tqdm>=4.64.0,<5.0.0
+click>=8.1.0,<9.0.0
+
+# Development and Testing Tools
+pytest>=7.1.0,<8.0.0
+pytest-cov>=3.0.0,<5.0.0
+pytest-mock>=3.8.0,<4.0.0
+
+# Code Quality and Formatting
+black>=22.6.0,<24.0.0
+isort>=5.10.0,<6.0.0
+flake8>=5.0.0,<7.0.0
+mypy>=0.971,<2.0.0
+
+# Pre-commit Hooks
+pre-commit>=2.20.0,<4.0.0
+
+# Jupyter and Development
+jupyter>=1.0.0,<2.0.0
+ipykernel>=6.15.0,<7.0.0
+notebook>=6.4.0,<7.0.0
+
+# Logging and Monitoring
+structlog>=22.1.0,<24.0.0
+rich>=12.5.0,<14.0.0
+
+# Optional: Database support (if needed later)
+# sqlalchemy>=1.4.0,<2.0.0
+# psycopg2-binary>=2.9.0,<3.0.0
+
+# Optional: Cloud storage (if needed later)
+# boto3>=1.24.0,<2.0.0
+# google-cloud-storage>=2.5.0,<3.0.0
