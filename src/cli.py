@@ -24,6 +24,23 @@ except ImportError:
 
 logger = get_logger(__name__)
 
+# Windows-safe symbols
+def get_symbol(check=True):
+    """Get appropriate symbols for different platforms"""
+    if os.name == 'nt':  # Windows
+        return "[OK]" if check else "[X]"
+    else:  # Unix/Linux/Mac
+        return "✓" if check else "✗"
+
+def safe_echo(text):
+    """Safely echo text, handling Windows encoding issues"""
+    try:
+        click.echo(text)
+    except UnicodeEncodeError:
+        # Replace problematic Unicode characters for Windows
+        safe_text = text.replace("✓", "[OK]").replace("✗", "[X]").replace("✅", "[DONE]").replace("🔄", "[PROGRESS]").replace("📋", "[TODO]").replace("📍", "[CURRENT]")
+        click.echo(safe_text)
+
 @click.group()
 @click.version_option(version="0.1.0")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose logging")
@@ -42,11 +59,11 @@ def predict(email_file):
     """Predict if an email is phishing or legitimate"""
     if email_file:
         logger.info(f"Analyzing email file: {email_file}")
-        click.echo(f"Analyzing: {email_file}")
+        safe_echo(f"Analyzing: {email_file}")
     else:
-        click.echo("No email file provided.")
-        click.echo("Usage: phishing-detect predict <email_file>")
-    click.echo("Status: Not implemented yet - Part of Issue #11")
+        safe_echo("No email file provided.")
+        safe_echo("Usage: phishing-detect predict <email_file>")
+    safe_echo("Status: Not implemented yet - Part of Issue #11")
 
 @main.command()
 @click.option("--data-path", type=click.Path(), help="Path to training data")
@@ -54,78 +71,131 @@ def predict(email_file):
 def train(data_path, epochs):
     """Train the phishing detection model"""
     logger.info(f"Starting training with data: {data_path}, epochs: {epochs}")
-    click.echo(f"Training model with {epochs} epochs...")
+    safe_echo(f"Training model with {epochs} epochs...")
     if data_path:
-        click.echo(f"Using data from: {data_path}")
-    click.echo("Status: Not implemented yet - Part of Issue #10")
+        safe_echo(f"Using data from: {data_path}")
+    safe_echo("Status: Not implemented yet - Part of Issue #10")
 
 @main.command()
 def info():
     """Show system information"""
-    click.echo("=== Phishing Detection System Info ===")
-    click.echo(f"Python version: {sys.version}")
+    safe_echo("=== Phishing Detection System Info ===")
+    safe_echo(f"Python version: {sys.version}")
     
     # Check core dependencies
     try:
         import torch
-        click.echo(f"PyTorch version: {torch.__version__}")
+        safe_echo(f"PyTorch version: {torch.__version__}")
         if torch.cuda.is_available():
-            click.echo(f"CUDA available: {torch.cuda.get_device_name()}")
+            safe_echo(f"CUDA available: {torch.cuda.get_device_name()}")
         else:
-            click.echo("CUDA: Not available (using CPU)")
+            safe_echo("CUDA: Not available (using CPU)")
     except ImportError:
-        click.echo("PyTorch: Not installed")
+        safe_echo("PyTorch: Not installed")
     
     try:
         import transformers
-        click.echo(f"Transformers version: {transformers.__version__}")
+        safe_echo(f"Transformers version: {transformers.__version__}")
     except ImportError:
-        click.echo("Transformers: Not installed")
+        safe_echo("Transformers: Not installed")
     
     try:
         import spacy
-        click.echo(f"spaCy version: {spacy.__version__}")
+        safe_echo(f"spaCy version: {spacy.__version__}")
         try:
             nlp = spacy.load("en_core_web_sm")
-            click.echo("spaCy English model: Available")
+            safe_echo("spaCy English model: Available")
         except OSError:
-            click.echo("spaCy English model: Not found (run: python -m spacy download en_core_web_sm)")
+            safe_echo("spaCy English model: Not found (run: python -m spacy download en_core_web_sm)")
     except ImportError:
-        click.echo("spaCy: Not installed")
+        safe_echo("spaCy: Not installed")
     
     # Project structure info
-    click.echo(f"Project root: {project_root}")
-    click.echo(f"Current directory: {os.getcwd()}")
+    safe_echo(f"Project root: {project_root}")
+    safe_echo(f"Current directory: {os.getcwd()}")
     
     # Check key directories
     key_dirs = ["src", "data", "notebooks", "tests", "logs"]
     for dir_name in key_dirs:
         dir_path = project_root / dir_name
-        status = "✓" if dir_path.exists() else "✗"
-        click.echo(f"{status} {dir_name}/ directory")
+        status = get_symbol(True) if dir_path.exists() else get_symbol(False)
+        safe_echo(f"{status} {dir_name}/ directory")
 
 @main.command()
 def status():
     """Show development status and next steps"""
-    click.echo("=== Development Status ===")
-    click.echo("\n✅ Completed:")
-    click.echo("  - Project infrastructure setup (Issue #1)")
-    click.echo("  - Virtual environment and dependencies")
-    click.echo("  - Code quality tools (black, isort, flake8)")
-    click.echo("  - Pre-commit hooks")
-    click.echo("  - Basic CLI framework")
+    safe_echo("=== Development Status ===")
+    safe_echo("")
+    safe_echo("[DONE] Completed:")
+    safe_echo("  - Project infrastructure setup (Issue #1)")
+    safe_echo("  - Virtual environment and dependencies")
+    safe_echo("  - Code quality tools (black, isort, flake8)")
+    safe_echo("  - Pre-commit hooks")
+    safe_echo("  - Basic CLI framework")
     
-    click.echo("\n🔄 In Progress:")
-    click.echo("  - Configuration management system (Issue #2)")
-    click.echo("  - Data collection setup (Issue #3)")
+    safe_echo("")
+    safe_echo("[PROGRESS] In Progress:")
+    safe_echo("  - Configuration management system (Issue #2)")
+    safe_echo("  - Data collection setup (Issue #3)")
     
-    click.echo("\n📋 Next Steps:")
-    click.echo("  1. Complete configuration management (Issue #2)")
-    click.echo("  2. Set up data collection pipeline (Issue #3)")
-    click.echo("  3. Implement email text cleaning (Issue #4)")
-    click.echo("  4. Begin Sprint 2 development")
+    safe_echo("")
+    safe_echo("[TODO] Next Steps:")
+    safe_echo("  1. Complete configuration management (Issue #2)")
+    safe_echo("  2. Set up data collection pipeline (Issue #3)")
+    safe_echo("  3. Implement email text cleaning (Issue #4)")
+    safe_echo("  4. Begin Sprint 2 development")
     
-    click.echo(f"\n📍 Current Sprint: Sprint 1 (Foundation)")
+    safe_echo("")
+    safe_echo("[CURRENT] Current Sprint: Sprint 1 (Foundation)")
+
+@main.command()
+def test():
+    """Test system functionality"""
+    safe_echo("=== System Test ===")
+    
+    # Test imports
+    test_imports = [
+        ("sys", "Python standard library"),
+        ("pathlib", "Path handling"),
+        ("click", "CLI framework"),
+    ]
+    
+    optional_imports = [
+        ("torch", "PyTorch"),
+        ("transformers", "Hugging Face Transformers"),
+        ("spacy", "spaCy NLP"),
+        ("pandas", "Pandas data processing"),
+        ("numpy", "NumPy numerical computing"),
+    ]
+    
+    safe_echo("Required dependencies:")
+    for module, description in test_imports:
+        try:
+            __import__(module)
+            safe_echo(f"{get_symbol(True)} {description}")
+        except ImportError:
+            safe_echo(f"{get_symbol(False)} {description} - MISSING")
+    
+    safe_echo("")
+    safe_echo("Optional dependencies:")
+    for module, description in optional_imports:
+        try:
+            __import__(module)
+            safe_echo(f"{get_symbol(True)} {description}")
+        except ImportError:
+            safe_echo(f"{get_symbol(False)} {description} - Not installed")
+    
+    # Test project structure
+    safe_echo("")
+    safe_echo("Project structure:")
+    required_dirs = ["src", "data", "notebooks", "tests"]
+    for dir_name in required_dirs:
+        dir_path = project_root / dir_name
+        exists = dir_path.exists()
+        safe_echo(f"{get_symbol(exists)} {dir_name}/ directory")
+    
+    safe_echo("")
+    safe_echo("Test completed!")
 
 if __name__ == "__main__":
     main()
