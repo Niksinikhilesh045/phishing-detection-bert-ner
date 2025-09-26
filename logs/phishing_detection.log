@@ -1,0 +1,4 @@
+2025-09-26 15:35:44 - test - INFO - <string>:1 - Logging works!
+2025-09-26 15:36:03 - test - DEBUG - <string>:1 - Debug message
+2025-09-26 15:36:03 - test - INFO - <string>:1 - Info message
+2025-09-26 15:36:03 - test - WARNING - <string>:1 - Warning message

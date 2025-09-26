@@ -8,9 +8,23 @@ import os
 import sys
 from pathlib import Path
 from typing import Optional
-import structlog
-from rich.logging import RichHandler
-from rich.console import Console
+
+# Try to import optional dependencies
+try:
+    import structlog
+    HAS_STRUCTLOG = True
+except ImportError:
+    HAS_STRUCTLOG = False
+    structlog = None
+
+try:
+    from rich.logging import RichHandler
+    from rich.console import Console
+    HAS_RICH = True
+except ImportError:
+    HAS_RICH = False
+    RichHandler = None
+    Console = None
 
 # Create logs directory if it doesn't exist
 LOGS_DIR = Path("logs")
@@ -36,8 +50,11 @@ def setup_logging(
     if log_file is None:
         log_file = LOGS_DIR / "phishing_detection.log"
     
-    # Configure structlog for structured logging
-    if json_logs:
+    # Check if we can use Rich
+    use_rich = use_rich and HAS_RICH
+    
+    # Configure structlog for structured logging (only if available)
+    if json_logs and HAS_STRUCTLOG:
         structlog.configure(
             processors=[
                 structlog.stdlib.filter_by_level,
@@ -54,6 +71,8 @@ def setup_logging(
             wrapper_class=structlog.stdlib.BoundLogger,
             cache_logger_on_first_use=True,
         )
+    elif json_logs and not HAS_STRUCTLOG:
+        print("Warning: structlog not available, falling back to standard JSON logging")
 
     # Logging configuration
     config = {
@@ -70,6 +89,9 @@ def setup_logging(
             "json": {
                 "()": structlog.stdlib.ProcessorFormatter,
                 "processor": structlog.processors.JSONRenderer(),
+            } if (HAS_STRUCTLOG and json_logs) else {
+                "format": '{"timestamp": "%(asctime)s", "name": "%(name)s", "level": "%(levelname)s", "message": "%(message)s"}',
+                "datefmt": "%Y-%m-%dT%H:%M:%S"
             },
         },
         "handlers": {
@@ -77,7 +99,7 @@ def setup_logging(
                 "class": "rich.logging.RichHandler" if use_rich else "logging.StreamHandler",
                 "level": level,
                 "formatter": "simple",
-                "stream": "ext://sys.stdout",
+                # Remove the 'stream' parameter that's causing the error
             },
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
@@ -125,15 +147,23 @@ def setup_logging(
         }
     }
     
+    # If using StreamHandler (no Rich), add stream parameter
+    if not use_rich:
+        config["handlers"]["console"]["stream"] = "ext://sys.stdout"
+    
     # Apply configuration
     logging.config.dictConfig(config)
     
     # Set up Rich console if using Rich handler
-    if use_rich:
+    if use_rich and HAS_RICH:
         console = Console()
         console.print(f"[green]✓[/green] Logging configured - Level: {level}")
         if log_file:
             console.print(f"[green]✓[/green] Log file: {log_file}")
+    else:
+        print(f"✓ Logging configured - Level: {level}")
+        if log_file:
+            print(f"✓ Log file: {log_file}")
 
 
 def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
@@ -158,21 +188,30 @@ def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
 def log_system_info() -> None:
     """Log system information for debugging"""
     import platform
-    import torch
-    import transformers
     
     logger = get_logger(__name__)
     
     logger.info("=== System Information ===")
     logger.info(f"Platform: {platform.platform()}")
     logger.info(f"Python version: {sys.version}")
-    logger.info(f"PyTorch version: {torch.__version__}")
-    logger.info(f"Transformers version: {transformers.__version__}")
-    logger.info(f"CUDA available: {torch.cuda.is_available()}")
     
-    if torch.cuda.is_available():
-        logger.info(f"CUDA device: {torch.cuda.get_device_name()}")
-        logger.info(f"CUDA version: {torch.version.cuda}")
+    # Try to import and log ML library info
+    try:
+        import torch
+        logger.info(f"PyTorch version: {torch.__version__}")
+        logger.info(f"CUDA available: {torch.cuda.is_available()}")
+        
+        if torch.cuda.is_available():
+            logger.info(f"CUDA device: {torch.cuda.get_device_name()}")
+            logger.info(f"CUDA version: {torch.version.cuda}")
+    except ImportError:
+        logger.info("PyTorch: Not installed")
+    
+    try:
+        import transformers
+        logger.info(f"Transformers version: {transformers.__version__}")
+    except ImportError:
+        logger.info("Transformers: Not installed")
 
 
 def setup_ml_logging() -> None:
