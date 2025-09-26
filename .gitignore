@@ -61,15 +61,15 @@ mlruns/
 .mlflow/
 
 # Data files (adjust based on your needs)
-data/raw/
-data/external/
-*.csv
-*.json
-*.parquet
-*.feather
-*.xlsx
-*.db
-*.sqlite
+# data/raw/
+# data/external/
+# *.csv
+# *.json
+# *.parquet
+# *.feather
+# *.xlsx
+# *.db
+# *.sqlite
 
 # Configuration files with secrets
 .env
@@ -80,9 +80,9 @@ config/production.yaml
 secrets/
 
 # Logs
-logs/
-*.log
-*.log.*
+# logs/
+# *.log
+# *.log.*
 
 # Testing
 .coverage
