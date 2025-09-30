@@ -44,14 +44,21 @@ def safe_echo(text):
 @click.group()
 @click.version_option(version="0.1.0")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose logging")
-def main(verbose):
+@click.pass_context
+def main(ctx, verbose):
     """Phishing Email Detection System - BERT & NER powered email security"""
+    # Store verbose in context for subcommands
+    ctx.ensure_object(dict)
+    ctx.obj['verbose'] = verbose
+    
     if verbose:
-        try:
-            setup_logging(level="DEBUG")
-        except:
-            logging.getLogger().setLevel(logging.DEBUG)
-        logger.info("Verbose mode enabled")
+        setup_logging(level="DEBUG")
+    #if verbose:
+        #try:
+            #setup_logging(level="DEBUG")
+        #except:
+            #logging.getLogger().setLevel(logging.DEBUG)
+        #logger.info("Verbose mode enabled")
 
 @main.command()
 @click.argument("email_file", type=click.Path(exists=True), required=False)

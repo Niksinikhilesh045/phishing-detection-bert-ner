@@ -2,3 +2,17 @@
 2025-09-26 15:36:03 - test - DEBUG - <string>:1 - Debug message
 2025-09-26 15:36:03 - test - INFO - <string>:1 - Info message
 2025-09-26 15:36:03 - test - WARNING - <string>:1 - Warning message
+2025-10-01 00:57:16 - test - INFO - <string>:1 - Logging works!
+2025-10-01 00:57:32 - test - DEBUG - <string>:1 - Debug message
+2025-10-01 00:57:32 - test - INFO - <string>:1 - Info message
+2025-10-01 00:57:32 - test - WARNING - <string>:1 - Warning message
+2025-10-01 01:00:56 - __main__ - INFO - logger:254 - Starting email analysis
+2025-10-01 01:00:56 - __main__ - WARNING - logger:255 - Large model detected - may use significant memory
+2025-10-01 01:00:56 - __main__ - ERROR - logger:256 - Failed to load email file
+2025-10-01 01:00:56 - __main__ - INFO - logger:259 - Processing email
+2025-10-01 01:00:56 - __main__ - INFO - logger:194 - === System Information ===
+2025-10-01 01:00:56 - __main__ - INFO - logger:195 - Platform: Windows-10-10.0.26100-SP0
+2025-10-01 01:00:56 - __main__ - INFO - logger:196 - Python version: 3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]
+2025-10-01 01:01:08 - __main__ - INFO - logger:201 - PyTorch version: 2.8.0+cpu
+2025-10-01 01:01:08 - __main__ - INFO - logger:202 - CUDA available: False
+2025-10-01 01:02:00 - __main__ - INFO - logger:212 - Transformers version: 4.56.2
