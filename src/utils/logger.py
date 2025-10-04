@@ -12,14 +12,16 @@ from typing import Optional
 # Try to import optional dependencies
 try:
     import structlog
+
     HAS_STRUCTLOG = True
 except ImportError:
     HAS_STRUCTLOG = False
     structlog = None
 
 try:
-    from rich.logging import RichHandler
     from rich.console import Console
+    from rich.logging import RichHandler
+
     HAS_RICH = True
 except ImportError:
     HAS_RICH = False
@@ -30,29 +32,30 @@ except ImportError:
 LOGS_DIR = Path("logs")
 LOGS_DIR.mkdir(exist_ok=True)
 
+
 def setup_logging(
     level: str = "INFO",
     log_file: Optional[str] = None,
     use_rich: bool = True,
-    json_logs: bool = False
+    json_logs: bool = False,
 ) -> None:
     """
     Set up logging configuration for the entire application
-    
+
     Args:
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         log_file: Optional log file path. If None, uses default log file
         use_rich: Whether to use Rich for colored console output
         json_logs: Whether to use JSON formatting for structured logs
     """
-    
+
     # Default log file
     if log_file is None:
         log_file = LOGS_DIR / "phishing_detection.log"
-    
+
     # Check if we can use Rich
     use_rich = use_rich and HAS_RICH
-    
+
     # Configure structlog for structured logging (only if available)
     if json_logs and HAS_STRUCTLOG:
         structlog.configure(
@@ -64,7 +67,7 @@ def setup_logging(
                 structlog.processors.TimeStamper(fmt="iso"),
                 structlog.processors.StackInfoRenderer(),
                 structlog.processors.format_exc_info,
-                structlog.processors.JSONRenderer()
+                structlog.processors.JSONRenderer(),
             ],
             context_class=dict,
             logger_factory=structlog.stdlib.LoggerFactory(),
@@ -81,22 +84,24 @@ def setup_logging(
         "formatters": {
             "detailed": {
                 "format": "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s",
-                "datefmt": "%Y-%m-%d %H:%M:%S"
+                "datefmt": "%Y-%m-%d %H:%M:%S",
             },
-            "simple": {
-                "format": "%(levelname)s - %(name)s - %(message)s"
-            },
+            "simple": {"format": "%(levelname)s - %(name)s - %(message)s"},
             "json": {
                 "()": structlog.stdlib.ProcessorFormatter,
                 "processor": structlog.processors.JSONRenderer(),
-            } if (HAS_STRUCTLOG and json_logs) else {
+            }
+            if (HAS_STRUCTLOG and json_logs)
+            else {
                 "format": '{"timestamp": "%(asctime)s", "name": "%(name)s", "level": "%(levelname)s", "message": "%(message)s"}',
-                "datefmt": "%Y-%m-%dT%H:%M:%S"
+                "datefmt": "%Y-%m-%dT%H:%M:%S",
             },
         },
         "handlers": {
             "console": {
-                "class": "rich.logging.RichHandler" if use_rich else "logging.StreamHandler",
+                "class": "rich.logging.RichHandler"
+                if use_rich
+                else "logging.StreamHandler",
                 "level": level,
                 "formatter": "simple",
                 # Remove the 'stream' parameter that's causing the error
@@ -108,7 +113,7 @@ def setup_logging(
                 "filename": str(log_file),
                 "maxBytes": 10485760,  # 10MB
                 "backupCount": 5,
-                "encoding": "utf8"
+                "encoding": "utf8",
             },
             "error_file": {
                 "class": "logging.handlers.RotatingFileHandler",
@@ -117,43 +122,34 @@ def setup_logging(
                 "filename": str(LOGS_DIR / "errors.log"),
                 "maxBytes": 10485760,  # 10MB
                 "backupCount": 3,
-                "encoding": "utf8"
-            }
+                "encoding": "utf8",
+            },
         },
         "loggers": {
             "": {  # root logger
                 "handlers": ["console", "file"],
                 "level": level,
-                "propagate": False
+                "propagate": False,
             },
             "phishing_detection": {
                 "handlers": ["console", "file", "error_file"],
                 "level": level,
-                "propagate": False
+                "propagate": False,
             },
             # Third-party loggers
-            "transformers": {
-                "level": "WARNING",
-                "propagate": True
-            },
-            "urllib3": {
-                "level": "WARNING",
-                "propagate": True
-            },
-            "requests": {
-                "level": "WARNING", 
-                "propagate": True
-            }
-        }
+            "transformers": {"level": "WARNING", "propagate": True},
+            "urllib3": {"level": "WARNING", "propagate": True},
+            "requests": {"level": "WARNING", "propagate": True},
+        },
     }
-    
+
     # If using StreamHandler (no Rich), add stream parameter
     if not use_rich:
         config["handlers"]["console"]["stream"] = "ext://sys.stdout"
-    
+
     # Apply configuration
     logging.config.dictConfig(config)
-    
+
     # Set up Rich console if using Rich handler
     if use_rich and HAS_RICH:
         console = Console()
@@ -169,46 +165,48 @@ def setup_logging(
 def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
     """
     Get a logger instance with the specified name
-    
+
     Args:
         name: Logger name (typically __name__)
         level: Optional logging level override
-    
+
     Returns:
         Configured logger instance
     """
     logger = logging.getLogger(name)
-    
+
     if level:
         logger.setLevel(getattr(logging, level.upper()))
-    
+
     return logger
 
 
 def log_system_info() -> None:
     """Log system information for debugging"""
     import platform
-    
+
     logger = get_logger(__name__)
-    
+
     logger.info("=== System Information ===")
     logger.info(f"Platform: {platform.platform()}")
     logger.info(f"Python version: {sys.version}")
-    
+
     # Try to import and log ML library info
     try:
         import torch
+
         logger.info(f"PyTorch version: {torch.__version__}")
         logger.info(f"CUDA available: {torch.cuda.is_available()}")
-        
+
         if torch.cuda.is_available():
             logger.info(f"CUDA device: {torch.cuda.get_device_name()}")
             logger.info(f"CUDA version: {torch.version.cuda}")
     except ImportError:
         logger.info("PyTorch: Not installed")
-    
+
     try:
         import transformers
+
         logger.info(f"Transformers version: {transformers.__version__}")
     except ImportError:
         logger.info("Transformers: Not installed")
@@ -217,12 +215,12 @@ def log_system_info() -> None:
 def setup_ml_logging() -> None:
     """Set up logging for ML experiments"""
     import warnings
-    
+
     # Suppress common ML library warnings
     warnings.filterwarnings("ignore", category=UserWarning, module="transformers")
     warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
     warnings.filterwarnings("ignore", category=UserWarning, module="torch")
-    
+
     # Set specific loggers to appropriate levels
     logging.getLogger("transformers").setLevel(logging.WARNING)
     logging.getLogger("torch").setLevel(logging.WARNING)
@@ -235,13 +233,9 @@ if not logging.getLogger().handlers:
     log_level = os.getenv("LOG_LEVEL", "INFO")
     use_json_logs = os.getenv("JSON_LOGS", "false").lower() == "true"
     use_rich_logs = os.getenv("RICH_LOGS", "true").lower() == "true"
-    
-    setup_logging(
-        level=log_level,
-        use_rich=use_rich_logs,
-        json_logs=use_json_logs
-    )
-    
+
+    setup_logging(level=log_level, use_rich=use_rich_logs, json_logs=use_json_logs)
+
     setup_ml_logging()
 
 
@@ -249,18 +243,17 @@ if not logging.getLogger().handlers:
 def example_logging():
     """Example of how to use the logging system"""
     logger = get_logger(__name__)
-    
+
     logger.debug("This is a debug message")
     logger.info("Starting email analysis")
     logger.warning("Large model detected - may use significant memory")
     logger.error("Failed to load email file")
-    
+
     # Structured logging with extra context
-    logger.info("Processing email", extra={
-        "email_id": "12345",
-        "sender": "example@domain.com", 
-        "confidence": 0.95
-    })
+    logger.info(
+        "Processing email",
+        extra={"email_id": "12345", "sender": "example@domain.com", "confidence": 0.95},
+    )
 
 
 if __name__ == "__main__":

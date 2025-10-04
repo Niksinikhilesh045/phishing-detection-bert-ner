@@ -138,7 +138,7 @@ client_secrets.json
 service-account-key.json
 
 # Pre-commit
-.pre-commit-config.yaml
+#.pre-commit-config.yaml
 
 # Project specific
 output/
